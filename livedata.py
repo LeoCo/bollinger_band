@@ -1,7 +1,7 @@
 import pandas as pd
 import datetime
 
-class livedata(object):
+class LiveData(object):
 
     def __init__(self, mock=True):
 
@@ -22,20 +22,23 @@ class livedata(object):
             #Load the csv into mockdata
             self.mockdata = pd.read_csv(self.file_name, parse_dates=True, date_parser=dateparse, index_col='Date')
 
-    def get_mock_prices(self):
+    def get_live_data(self):
 
-        if self.counter < (len(self.mockdata) - 1):
+        if self.mock == True:
+            if self.counter < (len(self.mockdata) - 1):
 
-            result = self.mockdata.ix[self.counter]
-            self.counter += 1
-            return result.values.tolist()
+                result = self.mockdata.ix[self.counter]
+                self.counter += 1
+                return result.values.tolist()
+            else:
+                return self.mockdata.ix[-1].values.tolist()
         else:
-            return self.mockdata.ix[-1].values.tolist()
+            pass
 
 if __name__ == '__main__':
     print('Test of the mock loader')
 
-    live = livedata()
+    live = LiveData()
 
     for _ in range(0,5):
-        print(live.get_mock_prices())
+        print(live.get_live_data())

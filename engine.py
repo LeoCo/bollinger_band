@@ -1,12 +1,13 @@
-from livedata import livedata as livedata
+from livedata import LiveData as LiveData
 import time
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.finance import candlestick_ohlc
+import logging
 
-class engine(object):
+class Engine(object):
 
     def __init__(self, time_window = 5, interval=1):
 
@@ -20,11 +21,11 @@ class engine(object):
         self.historic_data = pd.DataFrame(columns=['Open', 'High', 'Low', 'Close', 'Volume'])
 
         #Load the livedata object
-        self.live = livedata()
+        self.live = LiveData()
 
         #Initialize the data
         for x in range(0, self.time_window):
-            temp_df = pd.DataFrame([self.live.get_mock_prices()], columns=['Open', 'High', 'Low', 'Close', 'Volume'],
+            temp_df = pd.DataFrame([self.live.get_live_data()], columns=['Open', 'High', 'Low', 'Close', 'Volume'],
                                    index=[pd.to_datetime('now')])
             self.historic_data = self.historic_data.append(temp_df)
             time.sleep(self.interval)
@@ -33,7 +34,7 @@ class engine(object):
         self.bollingerbands = False
 
 
-    def run(self, graphics=False):
+    def run(self, graphics=False, candlestick = True):
 
         while (True):
 
@@ -60,19 +61,30 @@ class engine(object):
                 plt.xlabel("Date")
                 plt.ylabel("Price")
 
-                # Title
-                plt.title("GOOG")
+                # Plot BB if activated
+                if self.bollingerbands == True:
+                    plt.plot(data['Rolling Mean'], label='Mean')
+                    plt.plot(data['Upper BB'], label='Upper BB')
+                    plt.plot(data['Lower BB'], label='Lower BB')
 
-                # Candle stick chart
-                candlestick_ohlc(ax, data[['Date2', 'Open', 'High', 'Low', 'Close']].values, width=.000001, colorup='g',
-                                 alpha=.4)
+                # Title
+                plt.title("Live Chart")
+
+                if candlestick == True:
+                    # Candle stick chart
+                    candlestick_ohlc(ax, data[['Date2', 'Open', 'High', 'Low', 'Close']].values, width=.000001, colorup='g',
+                                     alpha=.4)
+                else:
+                    plt.plot(data['Close'], label='Price')
+
+                ax.legend(loc='upper left', shadow=True)
+
 
                 # Plot and pause the chart
                 plt.pause(self.interval)
 
                 # Close the figure to save memory
                 plt.close(fig)
-
 
             if graphics == False:
                 # Wait the interval
@@ -87,7 +99,7 @@ class engine(object):
         self.historic_data = self.historic_data[1:]
 
         #Create the new record to append
-        temp_df = pd.DataFrame([self.live.get_mock_prices()], columns=['Open', 'High', 'Low', 'Close', 'Volume'],
+        temp_df = pd.DataFrame([self.live.get_live_data()], columns=['Open', 'High', 'Low', 'Close', 'Volume'],
                                index=[pd.to_datetime('now')])
 
         #Append the record
@@ -104,6 +116,11 @@ class engine(object):
             rollingstd = self.historic_data['Close'].rolling(window=self.bollingerbands_length, center=False).std()
             self.historic_data['Rolling Std'].iloc[-1] = rollingstd.iloc[-1]
 
+            # Update the last value of Upper BB
+            self.historic_data['Upper BB'].iloc[-1] = rollingmean.iloc[-1] + 2 * rollingstd.iloc[-1]
+
+            # Update the last value of Lower BB
+            self.historic_data['Lower BB'].iloc[-1] = rollingmean.iloc[-1] - 2 * rollingstd.iloc[-1]
 
 
     def init_bollingerbands(self, length = 3):
@@ -122,4 +139,61 @@ class engine(object):
         #Initialiaze rolling std
         self.historic_data['Rolling Std'] = np.nan
 
+        #Initialize Upper Bollinger Band
+        self.historic_data['Upper BB'] = np.nan
 
+        # Initialize Lower Bollinger Band
+        self.historic_data['Lower BB'] = np.nan
+
+class Trader(object):
+
+    def __init__(self):
+        pass
+
+
+class Wallet(object):
+
+    BUDGET = 1000
+
+    def __init__(self):
+        self.money = self.BUDGET
+
+        # Initialize logger
+        self.logger = logging.getLogger('wallet_logger')
+        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        hdlr = logging.FileHandler('log/wallet.log')
+        self.logger.addHandler(hdlr)
+        self.logger.setLevel(logging.INFO)
+
+        # Log Starting Balance
+        self.logger.info('')
+        self.logger.info('Starting Balance: ' + str(self.money))
+
+
+
+    def withdraw(self, amount):
+        self.money = self.money - amount
+        self.logger.info('Withdraw: ' + str(amount) + ' | Balance: ' + str(self.money))
+        return amount
+
+    def deposit(self, amount):
+        self.money = self.money + amount
+        self.logger.info('Deposit: ' + str(amount) + ' | Balance: ' + str(self.money))
+        return amount
+
+    def balance(self):
+        return self.money
+
+    def print(self):
+        print("The money in the wallet is: " + str(self.money))
+
+
+if __name__ == '__main__':
+
+    wallet = Wallet()
+
+    wallet.withdraw(300)
+
+    wallet.deposit(200)
+
+    wallet.print()
