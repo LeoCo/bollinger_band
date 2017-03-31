@@ -81,62 +81,6 @@ class engine(object):
             # Update the historic dataset
             self.update_data()
 
-
-    def run_mock_print(self):
-
-        while(True):
-
-            print(self.historic_data)
-
-            #Wait the interval
-            time.sleep(self.interval)
-
-            #Update Dataset
-            self.update_data()
-
-    def run_mock_chart(self):
-
-        while(True):
-
-            # Copy the historic dataset
-            data = self.historic_data.copy()
-
-            # Print the dataset
-            print(data)
-
-            # Create a new column for the dates (to fix compatibility issue with matplotlib dates)
-            data['Date2'] = mdates.date2num(data.index.to_pydatetime())
-
-            # Enable interactive plotting
-            plt.ion()
-
-            fig, ax = plt.subplots()
-
-            # Set x axis format as a date
-            ax.xaxis_date()
-
-            # Labels
-            plt.xticks(rotation=45)
-            plt.xlabel("Date")
-            plt.ylabel("Price")
-
-            # Title
-            plt.title("GOOG")
-
-            # Candle stick chart
-            candlestick_ohlc(ax, data[['Date2', 'Open', 'High', 'Low', 'Close']].values, width=.000001, colorup='g',
-                             alpha=.4)
-
-            # Plot and pause the chart
-            plt.pause(self.interval)
-
-            # Close the figure to save memory
-            plt.close(fig)
-
-            # Update the historic dataset
-            self.update_data()
-
-
     def update_data(self):
 
         #Remove the first (latest in time) element
