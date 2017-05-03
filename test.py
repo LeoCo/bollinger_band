@@ -10,7 +10,7 @@ def dateparse (time_in_secs):
     return datetime.datetime.fromtimestamp(float(time_in_secs))
 
 #import
-file_name = 'goog.csv'
+file_name = 'data/goog.csv'
 
 data = pd.read_csv(file_name, parse_dates=True, date_parser=dateparse, index_col='Date') #index_col='Date
 
