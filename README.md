@@ -33,6 +33,18 @@ Then we can have three scenarios:
 
 ## Changing the dataset
 
-1. Open the `datamanage.py`
+1. Open the `datamanager.py`
 2. Go to `self.file_name = 'data/eni.csv'`
 3. Change the csv filename
+
+## Output
+
+The output is stored in the log folder in two files `trader.py` and `wallet.py`.
+* `trader.py` contains the log of the trader choices, position and datas
+* `wallet.py` contains the log of the bank account where the money is stored
+
+## Results
+
+For the [ENI](https://finance.yahoo.com/quote/ENI.MI?ltr=1) one year intraday dataset we started with 10,000 EUR and we finished with 21,622 EUR, equivalent to a + 116%, not bad at all!
+
+I invite everybody to download the repo and try with his preferred stocks.
